@@ -1,0 +1,38 @@
+# jason blanks, do or say what you will.
+
+import csv
+import os
+
+filelist = [f for f in os.listdir('.') if os.path.isfile(f)]
+
+for file in filelist:
+    if file.endswith('.txt'):
+    #if (file.endswith('.txt') and file.startswith('calllogs_')):
+        with open(file, "rb") as file_pipe:
+            with open(file + ".CC.csv", 'wb') as CCFILE, open(file + ".SIP.csv", 'wb') as SIPFILE, open(
+                            file + ".SIP.csv", 'wb') as NOMATCHFILE:
+                # based on https://supportforums.cisco.com/document/104136/communications-manager-call-logs-calllogstxt-file-format
+                CCFILE.write(
+                    'timestamp,msg_type,operation,callident_leg1,callident_leg2,calling_number,original_callednumber,final_called_number\n')
+                SIPFILE.write(
+                    'timestamp,msg_type,my_call_ident,proto,direction,local_ip,local_port,device_name,device_ip,device_port,correlation_id,message_tag,sip_callid,sip_method\n')
+                for line in file_pipe:
+                    l = line.replace(',','+').split('|')  # sip showing comma already, replacing w/ '+' as a fix.
+                    if l[1].strip() == 'CC':
+                        CCFILE.write(','.join(l))
+                    elif l[1].strip() == 'SIPL':
+                        SIPFILE.write(','.join(l))
+                    elif l[1].strip() == 'SIPT':
+                        SIPFILE.write(','.join(l))
+                    else:
+                        NOMATCHFILE.write(','.join(l))
+
+                    '''
+                    with open(file+".csv", 'wb') as file_comma:
+                        #CC header
+                        #timestamp,msg_type,operation,callident_leg1,callident_leg2,calling_number,original_callednumber,final_called_number,
+
+                        #SIPT Header
+                        #timestamp,msg_type,my_call_ident,proto,direction,local_ip,local_port,device_name,device_ip,device_port,correlation_id,message_tag,sip_callid,sip_method
+                        csv.writer(file_comma, delimiter=',').writerows(csv.reader(file_pipe, delimiter='|'))
+                        '''
